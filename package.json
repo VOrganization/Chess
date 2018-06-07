@@ -1,0 +1,24 @@
+{
+  "name": "chess",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VOrganization/Chess.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/VOrganization/Chess/issues"
+  },
+  "homepage": "https://github.com/VOrganization/Chess#readme",
+  "dependencies": {
+    "@tensorflow/tfjs": "^0.11.5",
+    "electron": "^2.0.2",
+    "jquery": "^3.3.1"
+  }
+}
