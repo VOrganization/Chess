@@ -28,7 +28,7 @@ body{
     width: 12.5%;
     height: 100%;
     float: left;
-    background-color: #000;
+    background-color: rgb(214, 145, 145);
 }
 
 .chessboard-field.white{
