@@ -50,7 +50,7 @@ async function calcMove(chessboard, side){
             const output = model.predict(input);
             let data = output.dataSync();
             for (let i = 0; i < data.length; i++) {
-                data[i] = Math.round( data[i] * 64.0 );
+                data[i] = Math.round( data[i] * 8.0 );
             }
             resolve(data);
         });

@@ -57,7 +57,9 @@ function moveEvent() {
         pawn.css({
             width: pawn.width() + "px",
             height: pawn.height() + "px",
-            position: "absolute"
+            position: "absolute",
+            left: e.pageX - $(pawn).width() / 2,
+            top: e.pageY - $(pawn).height() / 2, 
         });
     });
 
@@ -109,5 +111,9 @@ $(document).ready(function (e) {
 
     generateBoard($("#board0"), "black", chessboard);
     moveEvent();
+
+    calcMove(chessboard, "black").then((e) => {
+        console.log(e);
+    });
 
 });
