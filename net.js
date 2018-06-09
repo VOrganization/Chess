@@ -1,8 +1,7 @@
-// if(module.exports !== undefined){
-    const tf = require("@tensorflow/tfjs");
-// }
+const fs = require("fs");
+const tf = require("@tensorflow/tfjs");
 
-const model = tf.sequential({
+let model = tf.sequential({
     name: "VChess",
     layers: [
         tf.layers.dense({
@@ -30,6 +29,19 @@ model.compile({
     loss: tf.losses.meanSquaredError
 });
 
+async function loadModel(){
+    let f0 = new File([fs.readFileSync("model/model.json")], "model.json");
+    let f1 = new File([fs.readFileSync("model/weights.bin")], "weights.bin");
+
+    let files = tf.io.browserFiles([f0, f1]);
+    tf.loadModel(files).then((e) => {
+        console.log("Succes Load Model");
+        model = e;
+        model.predict(tf.tensor2d([[0,1,2,3,4,5,6,7,8,9]])).print();
+    }).catch(() => console.log("Error Load Model"));
+}
+loadModel();
+
 async function calcMove(chessboard, side){
     return new Promise((resolve, reject) => {
         let in_arr = new Array();
@@ -44,7 +56,7 @@ async function calcMove(chessboard, side){
                 in_arr.push(chessboard[y][x]);
             }
         }
-    
+        
         tf.tidy(() => {
             const input = tf.tensor2d([in_arr]);
             const output = model.predict(input);
