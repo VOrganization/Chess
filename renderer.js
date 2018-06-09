@@ -21,15 +21,17 @@ function generateBoard(board, view, sets){
             }
             let c = sets[y][x];
             if(c != 0){
+                let img = "pieces/";
                 let pawn_id = Math.abs(c);
                 let pawn = $("<div>").addClass("chessboard-pawn").addClass("chessboard-pawn-" + pawn_id);
-                // if(pawn < 0){
-                //     pawn.addClass("white");
-                // }
-                // else{
-                //     pawn.addClass("black");
-                // }
-                // pawn.html(`<img src="figury/black_bishop.svg">`);
+                if(c > 0){
+                    img += "white";
+                }
+                else{
+                    img += "black";
+                }
+                img += "_" + pawn_id + ".svg";
+                pawn.html(`<img src="` + img + `" draggable="false">`);
                 field.append(pawn);
             }
             row.append(field);
@@ -55,7 +57,9 @@ function moveEvent() {
         pawn.css({
             width: pawn.width() + "px",
             height: pawn.height() + "px",
-            position: "absolute"
+            position: "absolute",
+            left: e.pageX - $(pawn).width() / 2,
+            top: e.pageY - $(pawn).height() / 2, 
         });
     });
 
@@ -107,5 +111,9 @@ $(document).ready(function (e) {
 
     generateBoard($("#board0"), "black", chessboard);
     moveEvent();
+
+    calcMove(chessboard, "black").then((e) => {
+        console.log(e);
+    });
 
 });
