@@ -6,8 +6,8 @@ body{
 }
 
 .chessboard{
-    width: 400px;
-    height: 400px;
+    width: 600px;
+    height: 600px;
     background-color: #eee;
     border: 1px solid #000;
 }
@@ -21,16 +21,37 @@ body{
 
 .chessboard-row{
     width: 100%;
-    height:  12.5%;
+    height: 12.5%;
 }
 
 .chessboard-field{
     width: 12.5%;
     height: 100%;
     float: left;
-    background-color: rgb(214, 145, 145);
+    background-color: rgb(181, 136, 99);
 }
 
 .chessboard-field.white{
-    background-color: #fff;
+    background-color: rgb(240, 217, 181);
+}
+
+#container, #authors {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: lightgrey;
+}
+
+#logo {
+    float: left;
+    width: 20%;
+}
+
+#main-content {
+    float: left;
+}
+
+#sidebar {
+    float: left;
+    width: 30%;
 }

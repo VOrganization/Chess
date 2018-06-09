@@ -31,7 +31,7 @@ function generateBoard(board, view, sets){
                     img += "black";
                 }
                 img += "_" + pawn_id + ".svg";
-                pawn.html(`<img src="` + img + `" draggable="false">`);
+                pawn.html(`<img src="` + img + `" draggable="false" style="width: 100%;">`);
                 field.append(pawn);
             }
             row.append(field);
