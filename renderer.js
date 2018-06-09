@@ -109,6 +109,11 @@ function moveEvent() {
 
 $(document).ready(function (e) {
 
+    setInterval(function () {
+        var haj = $("#test").css("height");
+        document.getElementById("sidebar").style.height = haj;
+    }, 1500);
+
     generateBoard($("#board0"), "black", chessboard);
     moveEvent();
 
