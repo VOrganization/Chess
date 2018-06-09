@@ -16,7 +16,7 @@ app.on("ready", function(){
         slashes: true
     }));
 
-    // mainwindow.maximize();
+    mainwindow.maximize();
     mainwindow.webContents.openDevTools();
 
     mainwindow.on("closed", function(){

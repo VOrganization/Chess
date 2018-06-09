@@ -116,4 +116,10 @@ $(document).ready(function (e) {
         console.log(e);
     });
 
+    $(window).on("resize", function(){
+        for (let i = 0; i < $(".chessboard").length; i++) {
+            $(".chessboard").eq(i).height($(".chessboard").eq(i).width());
+        }
+    });
+
 });

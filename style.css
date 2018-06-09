@@ -1,13 +1,13 @@
 body{
     margin: 0px;
-    padding: 10px;
+    padding: 0px;
     width: 100%;
     height: 100%;
 }
 
 .chessboard{
-    width: 600px;
-    height: 600px;
+    width: 100%;
+    height: 100%;
     background-color: #eee;
     border: 1px solid #000;
 }
@@ -24,34 +24,99 @@ body{
     height: 12.5%;
 }
 
-.chessboard-field{
+.chessboard-field {
     width: 12.5%;
     height: 100%;
     float: left;
     background-color: rgb(181, 136, 99);
 }
 
-.chessboard-field.white{
+.chessboard-field.white {
     background-color: rgb(240, 217, 181);
 }
 
-#container, #authors {
-    width: 80%;
+#container {
+    width: 90%;
+    height: 100%;
+    background-color: lightgrey;
     margin-left: auto;
     margin-right: auto;
+}
+
+#authors {
     background-color: lightgrey;
 }
 
 #logo {
     float: left;
     width: 20%;
+    text-transform: uppercase;
+    font-size: 22px;
 }
 
 #main-content {
     float: left;
+    width: 50%;
+    box-sizing: border-box;
 }
 
 #sidebar {
     float: left;
     width: 30%;
+}
+
+#black-player, #white-player {
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background-color: grey;
+    padding: 10px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+#move-nav {
+    text-align: center;
+    margin-top: 30px;
+}
+
+#engine-out {
+    border: 1px solid black;
+    margin: 30px 10px 0 10px;
+}
+
+.variation {
+    border-bottom: 1px dotted black;
+}
+
+#status-bar {
+    border: 1px solid black;
+    margin: 30px 10px 0 10px;
+    text-align: center;
+}
+
+progress {
+    -webkit-appearance: progress-bar;
+    box-sizing: border-box;
+    display: inline-block;
+    height: 1em;
+    width: 10em;
+    vertical-align: -0.2em;
+}
+
+#game-notation {
+    border: 1px solid black;
+    margin: 30px 10px 0 10px;
+}
+
+.move {
+    width: 49.7%;
+    border-right: 1px dotted black;
+    border-bottom: 1px dotted black;
+    float: left;
+}
+
+#game-options {
+    border: 1px solid black;
+    margin: 30px 10px 0 10px;
 }
