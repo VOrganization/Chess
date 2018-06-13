@@ -14,21 +14,6 @@ const chessboard = [
 
 const moves = [
     {
-        name: "pionek",
-        id: 6,
-        start: {
-            x: 2,
-            y: 2,
-        },
-        move: [
-            [0,0,0,0,0],
-            [0,0,2,0,0],
-            [0,0,0,0,0],
-            [0,0,0,0,0],
-            [0,0,0,0,0],
-        ]
-    },
-    {
         name: "wieza",
         id: 1,
         start: {
@@ -59,11 +44,15 @@ const moves = [
         name: "kunik",
         id: 2,
         start: {
-            x: 0,
-            y: 0,
+            x: 2,
+            y: 2,
         },
         move: [
-
+            [0,1,0,1,0],
+            [1,0,0,0,1],
+            [0,0,0,0,0],
+            [1,0,0,0,1],
+            [0,1,0,1,0]
         ]
     },
     {
@@ -118,6 +107,34 @@ const moves = [
             [0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
             [0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0],
             [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+        ]
+    },
+    {
+        name: "krul",
+        id: 5,
+        start: {
+            x: 1,
+            y: 1,
+        },
+        move:[
+            [1,1,1],
+            [1,0,1],
+            [1,1,1],
+        ]
+    },
+    {
+        name: "pionek",
+        id: 6,
+        start: {
+            x: 2,
+            y: 2,
+        },
+        move: [
+            [0,0,3,0,0],
+            [0,4,2,4,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
         ]
     },
 ];
@@ -193,36 +210,34 @@ function makeMove(current_player, game, x1, y1, x2, y2){
             let y = Math.abs(y1 - y2);
             let mx = move.start.x - x;
             let my = move.start.y - y;
-            
+
             let vx = 0;
             let vy = 0;
             if(x1 > x2){ vx = -1; }
             if(x1 < x2){ vx =  1; }
             if(y1 > y2){ vy = -1; }
             if(y1 < y2){ vy =  1; }
-            
+
             let block = false;
             let cx = x1;
             let cy = y1;
             while (!block) {
+                if(cx == (x2 - vx) && cy == (y2 - vy)){
+                    break;
+                }
                 cx += vx;
                 cy += vy;
                 if(game.board[cy][cx] != 0){
                     block = true;
                 }
-                if(cx == x2 && cy == y2){
-                    break;
-                }
             }
             
-            if(block){
+            if(block && pawn_id != 2){
                 reject("You are blocked");
             }
 
             try {
-                let state = move.move[my][mx];
-
-                switch (state) {
+                switch (move.move[my][mx]) {
 
                     case 1:{
                         if(game.board[y2][x2] != 0 && ((pawn < 0 && game.board[y2][x2] < 0) || (pawn > 0 && game.board[y2][x2] > 0))){
@@ -241,6 +256,28 @@ function makeMove(current_player, game, x1, y1, x2, y2){
                         else{
                             reject("not ok");
                         }
+                        break;
+                    }
+
+                    case 3:{
+                        if((y1 == 6 && pawn > 0) || (y1 == 1 && pawn < 0)){
+                            resolve("OK");
+                        }
+                        else{
+                            reject("U can't make this move");
+                        }
+                        break;
+                    }
+
+                    case 4:{
+                        let tpawn = game.board[y2][x2];
+                        if(tpawn != 0 && ((pawn < 0 && tpawn > 0) ||(pawn > 0 && tpawn < 0))){
+                            resolve("OK");
+                        }
+                        else{
+                            reject("U can't make this move");
+                        }
+                        break;
                     }
 
                     default:{
