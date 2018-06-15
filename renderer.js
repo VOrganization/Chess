@@ -81,7 +81,7 @@ async function endGame(game){
             },
             success: function(d){
                 if(d == "OK"){
-                    resolve("OK");
+                    resolve("Send Game To Server");
                 }
                 else{
                     reject("Server RES Error");
@@ -119,7 +119,13 @@ async function newMove(game, x1, y1, x2, y2){
             else{
                 game.players[1].won = true;
             }
-            endGame(game);
+            endGame(game).then((e) =>{
+                console.log("End Game LOG");
+                console.log(e);
+            }).catch((e) => {
+                console.log("Error While Enging Game");
+                console.log(e);
+            });
             resolve();    
         }
 
