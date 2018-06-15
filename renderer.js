@@ -48,11 +48,13 @@ async function makeNewGame(){
             players: [
                 {
                     side: "black",
-                    points: 0
+                    points: 0,
+                    won: false
                 },
                 {
                     side: "white",
-                    points: 0
+                    points: 0,
+                    won: false
                 }
             ]
         })
@@ -68,6 +70,30 @@ async function botMove(game){
     });
 }
 
+async function endGame(game){
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            type: "POST",
+            url: "http://145.239.87.252:3000/upload",
+            data: {
+                type: "game",
+                data: JSON.stringify(game)
+            },
+            success: function(d){
+                if(d == "OK"){
+                    resolve("OK");
+                }
+                else{
+                    reject("Server RES Error");
+                }
+            },
+            error: function(e){
+                reject(e);
+            }
+        });
+    });
+}
+
 async function newMove(game, x1, y1, x2, y2){
     return new Promise((resolve, reject) => {
         game.moves.push({
@@ -77,6 +103,26 @@ async function newMove(game, x1, y1, x2, y2){
             x2: x2,
             y2: y2,
         });
+
+        let kings = [];
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                if(Math.abs(game.board[y][x]) == 5){
+                    kings.push(game.board[y][x]);
+                }
+            }
+        }
+        if(kings.length == 1){
+            if(kings[0] < 0){
+                game.players[0].won = true;
+            }
+            else{
+                game.players[1].won = true;
+            }
+            endGame(game);
+            resolve();    
+        }
+
         game.currentPlayer = game.currentPlayer == 1 ? 0 : 1;
 
         if(game.currentPlayer == 0){
