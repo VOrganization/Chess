@@ -1,3 +1,8 @@
+const net = require("./net");
+const fs = require("fs");
+const crypto = require("crypto");
+let model = null;
+let modelHash = "";
 let game;
 
 function generateBoard(board, view, sets){
@@ -62,11 +67,27 @@ async function makeNewGame(){
 }
 
 async function botMove(game){
-    let move = await calcMove(game.board, game.players[game.currentPlayer].side);
-    checkMove(game, move[0], move[1], move[2], move[3]).then((e) => {
-        newMove(game, move[0], move[1], move[2], move[3]).then((e) => {
-            console.log("OK");
-        });
+    return new Promise((resolve, reject) => {
+        if(model !== null){
+            net.CalcMove(model, game.board, game.players[game.currentPlayer].side).then((e) => {
+                let move = e;
+                console.log(move);
+                checkMove(game, move[0], move[1], move[2], move[3]).then((e) => {
+                    newMove(game, move[0], move[1], move[2], move[3]).then((e) => {
+                        console.log("INFO: Bot move register");
+                    }).catch((e) => {
+                        reject("Error: Some error while making new move");
+                    });
+                }).catch((e) => {
+                    reject("Error: Bot make incorrect move");
+                });
+            }).catch((e) => {
+                reject("Error: While calc move by model");
+            })
+        }
+        else{
+            reject("Error: Don't have loaded model");
+        }
     });
 }
 
@@ -132,7 +153,7 @@ async function newMove(game, x1, y1, x2, y2){
         game.currentPlayer = game.currentPlayer == 1 ? 0 : 1;
 
         if(game.currentPlayer == 0){
-            console.log("Gra BOT");
+            console.log("INFO: Bot making move");
             botMove(game);
         }
 
@@ -308,7 +329,7 @@ function moveEvent() {
                     let p_id = game.board[y1][x1];
                     game.board[y1][x1] = 0;
                     game.board[y2][x2] = p_id;
-                    newMove(game,x1,y1,x2,y2).then(() => console.log("OK")).catch(() => console.log("Cricical Error"));
+                    newMove(game,x1,y1,x2,y2).catch(() => console.log("Cricical Error"));
                 }).catch((e) => {
                     $(pawn).css({
                         left: "0px",
@@ -346,6 +367,39 @@ $(document).ready(function (e) {
         console.log("Create new game");
     });
 
-    calcMove(chessboard, "black").then((e) => console.log(e));
+    net.DownloadModel().then((e) => {
+        modelHash = e.hash;
+        fs.writeFileSync("model/model.json", e.model);
+        fs.writeFileSync("model/weights.bin", e.weight);
+        net.LoadModel(e.model, e.weight).then((e) => {
+            model = e;
+            console.log("Load Model: " + modelHash);
+            net.CalcMove(model, chessboard, "black").then((e) => {
+                console.log(e);
+            });
+            net.CalcMove(model, chessboard, "white").then((e) => {
+                console.log(e);
+            });
+        }).catch((e) => {
+            console.log("Error While Load model");
+        });
+    }).catch(() => {
+        let model   = fs.readFileSync("model/model.json");
+        let weights = fs.readFileSync("model/weights.bin");
+        let hash    = crypto.createHash('md5').update(model.toString('utf-8') + weights.toString('utf-8')).digest("hex");
+        net.LoadModel(model, weights).then((e) => {
+            model = e;
+            modelHash = hash;
+            console.log("Load Model: " + modelHash);
+            net.CalcMove(model, chessboard, "black").then((e) => {
+                console.log(e);
+            });
+            net.CalcMove(model, chessboard, "white").then((e) => {
+                console.log(e);
+            });
+        }).catch((e) => {
+            console.log("Error While Load model");
+        });
+    });
 
 });
