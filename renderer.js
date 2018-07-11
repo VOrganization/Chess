@@ -21,9 +21,11 @@ function generateBoard(board, view, sets){
                 let pawn = $("<div>").addClass("chessboard-pawn").addClass("chessboard-pawn-" + pawn_id);
                 if(c > 0){
                     img += "white";
+                    pawn.addClass("chessboard-pawn-side-white");
                 }
                 else{
                     img += "black";
+                    pawn.addClass("chessboard-pawn-side-black");
                 }
                 img += "_" + pawn_id + ".svg";
                 pawn.html(`<img src="` + img + `" draggable="false" style="width: 100%;">`);
@@ -115,47 +117,81 @@ async function endGame(game){
     });
 }
 
-async function newMove(game, x1, y1, x2, y2){
-    return new Promise((resolve, reject) => {
-        game.moves.push({
-            player: game.currentPlayer,
-            x1: x1,
-            y1: y1,
-            x2: x2,
-            y2: y2,
-        });
-
-        let kings = [];
-        for (let y = 0; y < 8; y++) {
-            for (let x = 0; x < 8; x++) {
-                if(Math.abs(game.board[y][x]) == 5){
-                    kings.push(game.board[y][x]);
+async function syncBoard(board, game){
+    console.log("syncBoard");
+    for (let y = 0; y < 8; y++) {
+        let row = $(board).children(".chessboard-row").eq(y);
+        for (let x = 0; x < 8; x++) {
+            let pawn = game.board[y][x];
+            let pawn_id = Math.abs(pawn);
+            let side = pawn > 0 ? "white" : "black"; 
+            
+            let field = row.children(".chessboard-field").eq(x);
+            if(!field.children().hasClass(`chessboard-pawn-${pawn_id}`) ||
+               !field.children().hasClass(`chessboard-pawn-side-${side}`) ||
+               !(field.children().length == 0 && pawn_id == 0)
+            ){
+                if(pawn_id == 0){
+                    field.empty();
+                }
+                else{
+                    let _pawn = $("<div>").addClass("chessboard-pawn").addClass(`chessboard-pawn-${pawn_id}`);
+                    _pawn.html(`<img src="pieces/${side}_${pawn_id}.svg" draggable="false" style="width: 100%;">`);
+                    field.html(_pawn);
                 }
             }
         }
-        if(kings.length == 1){
-            if(kings[0] < 0){
-                game.players[0].won = true;
-            }
-            else{
-                game.players[1].won = true;
-            }
-            endGame(game).then((e) =>{
-                console.log("End Game LOG");
-                console.log(e);
-            }).catch((e) => {
-                console.log("Error While Enging Game");
-                console.log(e);
+    }
+}
+
+async function newMove(game, x1, y1, x2, y2){
+    return new Promise((resolve, reject) => {
+        let pawn = game.board[y1][x1];
+        checkMove(game, x1, y1, x2, y2).then((e) => {
+            game.moves.push({
+                player: game.currentPlayer,
+                pawn: pawn,
+                x1: x1,
+                y1: y1,
+                x2: x2,
+                y2: y2,
             });
-            resolve();    
-        }
+            syncBoard($("#board0"), game);
+            resolve();
+        });
 
-        game.currentPlayer = game.currentPlayer == 1 ? 0 : 1;
+        // let kings = [];
+        // for (let y = 0; y < 8; y++) {
+        //     for (let x = 0; x < 8; x++) {
+        //         if(Math.abs(game.board[y][x]) == 5){
+        //             kings.push(game.board[y][x]);
+        //         }
+        //     }
+        // }
+        // if(kings.length == 1){
+        //     if(kings[0] < 0){
+        //         game.players[0].won = true;
+        //     }
+        //     else{
+        //         game.players[1].won = true;
+        //     }
+        //     endGame(game).then((e) =>{
+        //         console.log("End Game LOG");
+        //         console.log(e);
+        //     }).catch((e) => {
+        //         console.log("Error While Enging Game");
+        //         console.log(e);
+        //     });
+        //     resolve();    
+        // }
 
-        if(game.currentPlayer == 0){
-            console.log("INFO: Bot making move");
-            botMove(game);
-        }
+        // game.currentPlayer = game.currentPlayer == 1 ? 0 : 1;
+
+        // if(game.currentPlayer == 0){
+        //     console.log("INFO: Bot making move");
+        //     botMove(game);
+        // }
+        
 
         resolve();
     });
@@ -168,9 +204,10 @@ async function checkMove(game, x1, y1, x2, y2){
             reject("U can't move empty space");
         }
         let side = game.players[game.currentPlayer].side;
-        if(!(side == "black" && pawn < 0) && !(side == "white" && pawn > 0)){
-            reject("U can't move enemie's figures");
-        }
+        side = pawn > 0 ? "white" : "black";
+        // if(!(side == "black" && pawn < 0) && !(side == "white" && pawn > 0)){
+        //     reject("U can't move enemie's figures");
+        // }
 
         let pawn_id = Math.abs(pawn);
         let move = null;
@@ -214,19 +251,29 @@ async function checkMove(game, x1, y1, x2, y2){
             try {
                 switch (move.move[my][mx]) {
 
+                    //zwykly ruch
                     case 1:{
                         if(game.board[y2][x2] != 0 && ((pawn < 0 && game.board[y2][x2] < 0) || (pawn > 0 && game.board[y2][x2] > 0))){
                             reject("You can't beat your own pawn!");
                         }
                         else{
-                            resolve("OK");
+                            game.board[y2][x2] = pawn;
+                            game.board[y1][x1] = 0;
+                            resolve({
+                                status: 0
+                            });
                         }
                         break;
                     }
 
+                    //ruch pionka naprzud
                     case 2:{
                         if(game.board[y2][x2] == 0){
-                            resolve("OK");
+                            game.board[y2][x2] = pawn;
+                            game.board[y1][x1] = 0;
+                            resolve({
+                                status: 0
+                            });
                         }
                         else{
                             reject("not ok");
@@ -234,9 +281,14 @@ async function checkMove(game, x1, y1, x2, y2){
                         break;
                     }
 
+                    //ruch pionka na starcie o 2
                     case 3:{
                         if((y1 == 6 && pawn > 0) || (y1 == 1 && pawn < 0)){
-                            resolve("OK");
+                            game.board[y2][x2] = pawn;
+                            game.board[y1][x1] = 0;
+                            resolve({
+                                status: 0
+                            });
                         }
                         else{
                             reject("U can't make this move");
@@ -244,14 +296,52 @@ async function checkMove(game, x1, y1, x2, y2){
                         break;
                     }
 
-                    case 4:{
+                    //ruch pionka na boki kiedy jest przeciwnik
+                    case 4: {
                         let tpawn = game.board[y2][x2];
-                        if(tpawn != 0 && ((pawn < 0 && tpawn > 0) ||(pawn > 0 && tpawn < 0))){
-                            resolve("OK");
+                        if(tpawn != 0 && ((pawn < 0 && tpawn > 0) || (pawn > 0 && tpawn < 0))){
+                            game.board[y2][x2] = pawn;
+                            game.board[y1][x1] = 0;
+                            resolve({
+                                status: 0
+                            });
                         }
                         else{
                             reject("U can't make this move");
                         }
+                        break;
+                    }
+
+                    case 5: {
+                        let s = side == "white" ? 1 : -1;
+                        for (let i = 0; i < game.moves.length; i++) {
+                            let m = game.moves[i];
+                            if(m.pawn == s * 1 || m.pawn == s * 5){
+                                reject("U make move before");
+                            }
+                        }
+
+                        if(vx > 0){
+                            game.board[y2][x2] = pawn;
+                            game.board[y2][x2 - 1] = s * 1;
+                            game.board[y1][x1] = 0;
+                            game.board[y1][7] = 0;
+                            resolve({
+                                status: 0
+                            });
+                        }
+
+                        if(vx < 0){
+                            game.board[y2][x2] = pawn;
+                            game.board[y2][x2 + 1] = s * 1;
+                            game.board[y1][x1] = 0;
+                            game.board[y1][0] = 0;
+                            resolve({
+                                status: 0
+                            });
+                        }
+
+                        reject("U can't make roszada");
                         break;
                     }
 
@@ -317,27 +407,39 @@ function moveEvent() {
             if(field !== null){
                 let x2 = field.index();
                 let y2 = field.parent().index();
-                checkMove(game, x1, y1, x2, y2).then((e) => {
-                    let o = $(pawn).clone();
-                    o.css({
-                        left: "0px",
-                        top: "0px",
-                        position: "static",
-                    });
-                    $(field).html(o);
-                    $(pawn).remove();
-                    let p_id = game.board[y1][x1];
-                    game.board[y1][x1] = 0;
-                    game.board[y2][x2] = p_id;
-                    newMove(game,x1,y1,x2,y2).catch(() => console.log("Cricical Error"));
-                }).catch((e) => {
-                    $(pawn).css({
-                        left: "0px",
-                        top: "0px",
-                        position: "static",
-                    });    
-                    console.log(e);
-                })
+
+                $(pawn).css({
+                    left: "0px",
+                    top: "0px",
+                    position: "static",
+                });
+
+                newMove(game, x1, y1, x2, y2).catch((error) => {
+                    alert("Error2");
+                    alert(error);
+                });
+
+                // checkMove(game, x1, y1, x2, y2).then((e) => {
+                //     let o = $(pawn).clone();
+                //     o.css({
+                //         left: "0px",
+                //         top: "0px",
+                //         position: "static",
+                //     });
+                //     $(field).html(o);
+                //     $(pawn).remove();
+                //     let p_id = game.board[y1][x1];
+                //     game.board[y1][x1] = 0;
+                //     game.board[y2][x2] = p_id;
+                //     newMove(game,x1,y1,x2,y2).catch(() => console.log("Cricical Error"));
+                // }).catch((e) => {
+                //     $(pawn).css({
+                //         left: "0px",
+                //         top: "0px",
+                //         position: "static",
+                //     });    
+                //     console.log(e);
+                // })
             }
             else{
                 $(pawn).css({
@@ -367,39 +469,39 @@ $(document).ready(function (e) {
         console.log("Create new game");
     });
 
-    net.DownloadModel().then((e) => {
-        modelHash = e.hash;
-        fs.writeFileSync("model/model.json", e.model);
-        fs.writeFileSync("model/weights.bin", e.weight);
-        net.LoadModel(e.model, e.weight).then((e) => {
-            model = e;
-            console.log("Load Model: " + modelHash);
-            net.CalcMove(model, chessboard, "black").then((e) => {
-                console.log(e);
-            });
-            net.CalcMove(model, chessboard, "white").then((e) => {
-                console.log(e);
-            });
-        }).catch((e) => {
-            console.log("Error While Load model");
-        });
-    }).catch(() => {
-        let model   = fs.readFileSync("model/model.json");
-        let weights = fs.readFileSync("model/weights.bin");
-        let hash    = crypto.createHash('md5').update(model.toString('utf-8') + weights.toString('utf-8')).digest("hex");
-        net.LoadModel(model, weights).then((e) => {
-            model = e;
-            modelHash = hash;
-            console.log("Load Model: " + modelHash);
-            net.CalcMove(model, chessboard, "black").then((e) => {
-                console.log(e);
-            });
-            net.CalcMove(model, chessboard, "white").then((e) => {
-                console.log(e);
-            });
-        }).catch((e) => {
-            console.log("Error While Load model");
-        });
-    });
+    // net.DownloadModel().then((e) => {
+    //     modelHash = e.hash;
+    //     fs.writeFileSync("model/model.json", e.model);
+    //     fs.writeFileSync("model/weights.bin", e.weight);
+    //     net.LoadModel(e.model, e.weight).then((e) => {
+    //         model = e;
+    //         console.log("Load Model: " + modelHash);
+    //         net.CalcMove(model, chessboard, "black").then((e) => {
+    //             console.log(e);
+    //         });
+    //         net.CalcMove(model, chessboard, "white").then((e) => {
+    //             console.log(e);
+    //         });
+    //     }).catch((e) => {
+    //         console.log("Error While Load model");
+    //     });
+    // }).catch(() => {
+    //     let model   = fs.readFileSync("model/model.json");
+    //     let weights = fs.readFileSync("model/weights.bin");
+    //     let hash    = crypto.createHash('md5').update(model.toString('utf-8') + weights.toString('utf-8')).digest("hex");
+    //     net.LoadModel(model, weights).then((e) => {
+    //         model = e;
+    //         modelHash = hash;
+    //         console.log("Load Model: " + modelHash);
+    //         net.CalcMove(model, chessboard, "black").then((e) => {
+    //             console.log(e);
+    //         });
+    //         net.CalcMove(model, chessboard, "white").then((e) => {
+    //             console.log(e);
+    //         });
+    //     }).catch((e) => {
+    //         console.log("Error While Load model");
+    //     });
+    // });
 
 });
