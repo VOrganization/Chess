@@ -69,7 +69,7 @@ async function CalcMove(model, board, side){
         }
         for (let y = 0; y < board.length; y++) {
             for (let x = 0; x < board[y].length; x++) {
-                in_arr.push(board[y][x]);
+                in_arr.push(board[y][x] / 6.0);
             }
         }
         tf.tidy(() => {
