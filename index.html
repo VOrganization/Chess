@@ -33,20 +33,42 @@
                         Left Middle Right
                     </div>
                 </div>
-                <div id="sidebar">
-                    <div id="engine-out">
-                        <div class="variation">0.5 1. e4</div>
-                        <div class="variation">0.5 1. e4</div>
-                        <div class="variation">0.5 1. e4</div>
+                <div class="sidebar">
+                    <div id="options">
+                        <div class="sidebar_option">Game</div><div class="sidebar_option">Analysis</div>
                     </div>
                     <div id="status-bar">
-                        <progress value="42" max="100"></progress>
+                        <meter value="0" min="-50" max="50"></meter>
                     </div>
+                    <div id="engine-out">
+                        <div class="variation">
+                            <div class="variation_value">-0.5</div>
+                            <div class="variation_line">1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6</div> 
+                        </div>
+                        <div class="variation">
+                            <div class="variation_value">-0.5</div>
+                            <div class="variation_line">1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6</div> 
+                        </div>
+                        <div class="variation">
+                            <div class="variation_value">-0.5</div>
+                            <div class="variation_line">1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6</div> 
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar">
                     <div id="game-notation">
-                        <div class="move">1. e4</div><div class="move">1. e5</div>
-                        <div style="clear:both;"></div>
-                        <div class="move">1. e4</div><div class="move">1. e5</div>
-                        <div style="clear:both;"></div>
+                        <div class="moves_line">
+                            <div class="move_number">1.</div>
+                            <div class="move">e4</div><div class="move_time">1.73s</div>
+                            <div class="move">e5</div><div class="move_time">2.5s</div>
+                            <div style="clear:both;"></div>
+                        </div>
+                        <div class="moves_line">
+                            <div class="move_number">2.</div>
+                            <div class="move">Nf3</div><div class="move_time">1.73s</div>
+                            <div class="move">Nc6</div><div class="move_time">2.5s</div>
+                            <div style="clear:both;"></div>
+                        </div>
                     </div>
                     <div id="game-options">
                         PGN
