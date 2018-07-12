@@ -319,7 +319,6 @@ async function checkMove(game, x1, y1, x2, y2){
             try {
                 switch (move.move[my][mx]) {
 
-                    //zwykly ruch
                     case 1:{
                         if(game.board[y2][x2] != 0 && ((pawn < 0 && game.board[y2][x2] < 0) || (pawn > 0 && game.board[y2][x2] > 0))){
                             reject("You can't beat your own pawn!");
@@ -334,7 +333,6 @@ async function checkMove(game, x1, y1, x2, y2){
                         break;
                     }
 
-                    //ruch pionka naprzud
                     case 2:{
                         if(game.board[y2][x2] == 0){
                             game.board[y2][x2] = pawn;
@@ -349,7 +347,6 @@ async function checkMove(game, x1, y1, x2, y2){
                         break;
                     }
 
-                    //ruch pionka na starcie o 2
                     case 3:{
                         if((y1 == 6 && pawn > 0) || (y1 == 1 && pawn < 0)){
                             game.board[y2][x2] = pawn;
@@ -364,7 +361,6 @@ async function checkMove(game, x1, y1, x2, y2){
                         break;
                     }
 
-                    //ruch pionka na boki kiedy jest przeciwnik
                     case 4: {
                         let tpawn = game.board[y2][x2];
                         if(tpawn != 0 && ((pawn < 0 && tpawn > 0) || (pawn > 0 && tpawn < 0))){
@@ -382,6 +378,7 @@ async function checkMove(game, x1, y1, x2, y2){
 
                     case 5: {
                         let s = side == "white" ? 1 : -1;
+                        let b = game.board;
                         for (let i = 0; i < game.moves.length; i++) {
                             let m = game.moves[i];
                             if(m.pawn == s * 1 || m.pawn == s * 5){
@@ -389,24 +386,48 @@ async function checkMove(game, x1, y1, x2, y2){
                             }
                         }
 
+                        if(checkField(game, side, x1, y1).length != 0){
+                            reject("King is check");
+                        }
+
                         if(vx > 0){
-                            game.board[y2][x2] = pawn;
-                            game.board[y2][x2 - 1] = s * 1;
-                            game.board[y1][x1] = 0;
-                            game.board[y1][7] = 0;
-                            resolve({
-                                status: 0
-                            });
+                            if(b[y1][x1 + 1] == 0 && b[y1][x1 + 2] == 0){
+                                if(checkField(game, side, x1 + 1, y1).length == 0 && checkField(game, side, x1 + 2, y1).length == 0){
+                                    game.board[y2][x2] = pawn;
+                                    game.board[y2][x2 - 1] = s * 1;
+                                    game.board[y1][x1] = 0;
+                                    game.board[y1][7] = 0;
+                                    resolve({
+                                        status: 0
+                                    });
+                                }
+                                else{
+                                    reject("Fields betwen are attacking");    
+                                }
+                            }
+                            else{
+                                reject("Fields betwen aren't empty");
+                            }
                         }
 
                         if(vx < 0){
-                            game.board[y2][x2] = pawn;
-                            game.board[y2][x2 + 1] = s * 1;
-                            game.board[y1][x1] = 0;
-                            game.board[y1][0] = 0;
-                            resolve({
-                                status: 0
-                            });
+                            if(b[y1][x1 - 1] == 0 && b[y1][x1 - 2] == 0 && b[y1][x1 - 3] == 0){
+                                if(checkField(game, side, x1 - 1, y1).length == 0 && checkField(game, side, x1 - 2, y1).length == 0){
+                                    game.board[y2][x2] = pawn;
+                                    game.board[y2][x2 + 1] = s * 1;
+                                    game.board[y1][x1] = 0;
+                                    game.board[y1][0] = 0;
+                                    resolve({
+                                        status: 0
+                                    });
+                                }
+                                else{
+                                    reject("Fields betwen are attacking");    
+                                }
+                            }
+                            else{
+                                reject("Fields betwen aren't empty");
+                            }
                         }
 
                         reject("U can't make roszada");
