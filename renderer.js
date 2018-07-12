@@ -94,27 +94,117 @@ async function botMove(game){
 }
 
 async function endGame(game){
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            type: "POST",
-            url: "http://145.239.87.252:3000/upload",
-            data: {
-                type: "game",
-                data: JSON.stringify(game)
-            },
-            success: function(d){
-                if(d == "OK"){
-                    resolve("Send Game To Server");
+    //upload to firebase
+}
+
+function checkField(game, side, x2, y2){
+    let states = [];
+    for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+            let pawn = game.board[y][x];
+            if((side == "white" && pawn > 0) || (side == "black" && pawn < 0) || pawn == 0){
+                continue;
+            }
+            let m = moves[Math.abs(pawn) - 1];
+            let mx = m.start.x - Math.abs(x - x2);
+            let my = m.start.y - Math.abs(y - y2);
+
+            try {
+                if(m.move[my][mx] == 1){
+                    let vx = 0;
+                    let vy = 0;
+                    if(x > x2){ vx = -1; }
+                    if(x < x2){ vx =  1; }
+                    if(y > y2){ vy = -1; }
+                    if(y < y2){ vy =  1; }
+
+                    let block = false;
+                    let cx = x;
+                    let cy = y;
+                    while (!block) {
+                        if(cx == (x2 - vx) && cy == (y2 - vy)){
+                            break;
+                        }
+                        cx += vx;
+                        cy += vy;
+                        if(game.board[cy][cx] != 0){
+                            block = true;
+                        }
+                    }
+                    if(!block){
+                        let state = {
+                            state: 0,
+                            pawn: pawn,
+                            x: x,
+                            y: y,
+                        }
+                        states.push(state);
+                    }
+                }
+                if(m.move[my][mx] == 2){
+                    let state = {
+                        state: 0,
+                        pawn: pawn,
+                        x: x,
+                        y: y,
+                    }
+                    states.push(state);
+                }
+            } catch (error) {}
+        }
+    }
+    return states;
+}
+
+function checkStatus(game){
+    let out = [];
+    for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+            if(Math.abs(game.board[y][x]) != 5){
+                continue;
+            }
+
+            let side = game.board[y][x] > 0 ? "white" : "black";
+            let states = checkField(game, side, x, y);
+            let status = {
+                side: side,
+                state: 0,
+                x: x,
+                y: y,
+            }
+
+            if(states.length > 0){
+                let canMove = false;
+                for (let y2 = -1; y2 < 2; y2++) {
+                    for (let x2 = -1; x2 < 2; x2++) {
+                        let my = y + y2;
+                        let mx = x + x2;
+                        if(my > 7 || my < 0 || mx > 7 || mx < 0){
+                            continue;
+                        }
+                        let field = game.board[my][mx];
+                        if((field == 5 && side == "white") || (field == -5 && side == "black")){
+                            continue;
+                        }
+                        if(field == 0){
+                            if(checkField(game, side, mx, my).length == 0){
+                                canMove = true;
+                            }
+                        }
+                    }
+                }
+                if(canMove){
+                    status.state = 1;
                 }
                 else{
-                    reject("Server RES Error");
+                    status.state = 2;
                 }
-            },
-            error: function(e){
-                reject(e);
             }
-        });
-    });
+
+            out.push(status);
+        }   
+    }
+    return out;
 }
 
 async function syncBoard(board, game){
@@ -156,44 +246,22 @@ async function newMove(game, x1, y1, x2, y2){
                 x2: x2,
                 y2: y2,
             });
+
+            let status = checkStatus(game);
+            for (let i = 0; i < status.length; i++) {
+                let s = status[i];
+                if(s.state == 1){
+                    alert(`${s.side}: Szach`);
+                }
+                if(s.state == 2){
+                    endGame(game).then(() => console.log("Success Upload to Cloud"));
+                    alert(`${s.side}: Szach Mat`);
+                }
+            }
+
             syncBoard($("#board0"), game);
             resolve();
         });
-
-        // let kings = [];
-        // for (let y = 0; y < 8; y++) {
-        //     for (let x = 0; x < 8; x++) {
-        //         if(Math.abs(game.board[y][x]) == 5){
-        //             kings.push(game.board[y][x]);
-        //         }
-        //     }
-        // }
-        // if(kings.length == 1){
-        //     if(kings[0] < 0){
-        //         game.players[0].won = true;
-        //     }
-        //     else{
-        //         game.players[1].won = true;
-        //     }
-        //     endGame(game).then((e) =>{
-        //         console.log("End Game LOG");
-        //         console.log(e);
-        //     }).catch((e) => {
-        //         console.log("Error While Enging Game");
-        //         console.log(e);
-        //     });
-        //     resolve();    
-        // }
-
-        // game.currentPlayer = game.currentPlayer == 1 ? 0 : 1;
-
-        // if(game.currentPlayer == 0){
-        //     console.log("INFO: Bot making move");
-        //     botMove(game);
-        // }
-        
-
-        resolve();
     });
 }
 
