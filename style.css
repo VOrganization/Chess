@@ -7,6 +7,9 @@ body, html{
     overflow: hidden;
 }
 
+
+/* chessboard */
+
 .chessboard{
     width: 100%;
     height: 100%;
@@ -18,8 +21,6 @@ body, html{
 [class^="chessboard-pawn-"], .chessboard-pawn{
     width: 100%;
     height: 100%;
-    /* opacity: 0.5;
-    background-color: aqua; */
 }
 
 .chessboard-row{
@@ -38,6 +39,9 @@ body, html{
     background-color: rgb(240, 217, 181);
 }
 
+
+/* main - layout */
+
 #container {
     width: 95%;
     height: 100%;
@@ -46,10 +50,6 @@ body, html{
     margin-right: auto;
     margin-top: 2.1%;
     box-sizing: border-box;
-}
-
-#authors {
-    background-color: #eee;
 }
 
 #logo {
@@ -76,6 +76,13 @@ body, html{
     margin-bottom: 20px;
 }
 
+#authors {
+    background-color: #eee;
+}
+
+
+/* main-content styles */
+
 #black-player, #white-player {
     border: 2px solid #fff;
     border-radius: 10px;
@@ -90,28 +97,8 @@ body, html{
     text-align: center;
 }
 
-#engine-out {
-    border: 1px solid black;
-}
 
-.variation {
-    border-bottom: 1px solid grey;
-}
-
-.variation_value {
-    width: 13%;
-    background-color: black;
-    display: inline-block;
-    color: #fff;
-    text-align: center;
-    font-weight: 800;
-    border-right: 2px solid black;
-}
-
-.variation_line {
-    width: 85%;
-    display: inline-block;
-}
+/* sidebar 1st */
 
 .sidebar_option {
     display: inline-block;
@@ -137,6 +124,32 @@ meter::-webkit-meter-optimum-value {
 meter::-webkit-meter-bar { 
     background: black;
 }
+
+#engine-out {
+    border: 1px solid black;
+}
+
+.variation {
+    border-bottom: 1px solid grey;
+}
+
+.variation_value {
+    width: 13%;
+    background-color: black;
+    display: inline-block;
+    color: #fff;
+    text-align: center;
+    font-weight: 800;
+    border-right: 2px solid black;
+}
+
+.variation_line {
+    width: 85%;
+    display: inline-block;
+}
+
+
+/* sidebar 2rd */
 
 #game-notation {
     margin: 10px 10px;
@@ -170,4 +183,32 @@ meter::-webkit-meter-bar {
     margin: 30px 10px;
     padding-top: 10px;
     text-align: center;
+}
+
+/* modal */
+.modal{
+    position: absolute;
+    z-index: 1000;
+    background-color: #fff;
+    border-radius: 3px;
+    /* border: 1px solid #797979; */
+    /* box-shadow: 0 0 3px 1px rgb(209, 209, 209); */
+}
+
+.modal-center{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+#promotion-white > img, #promotion-black > img{
+    display: block;
+    padding: 15px;
+    transition: all 0.2s ease-in-out;
+}
+
+#promotion-white > img:hover, #promotion-black > img:hover{
+    cursor: pointer;
+    background-color: rgb(76, 76, 240);
 }

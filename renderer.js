@@ -207,7 +207,7 @@ function checkStatus(game){
     return out;
 }
 
-async function syncBoard(board, game){
+function syncBoard(board, game){
     console.log("syncBoard");
     for (let y = 0; y < 8; y++) {
         let row = $(board).children(".chessboard-row").eq(y);
@@ -234,6 +234,40 @@ async function syncBoard(board, game){
     }
 }
 
+async function promotion(game, x, y){
+    return new Promise((resolve, reject) => {
+        let board = $("#board0");
+        let field = board.children(".chessboard-row").eq(y).children(".chessboard-field").eq(x);
+        let offset = field.offset();
+
+        $("#promotion").css({
+            top: `${offset.top}px`,
+            left: `${offset.left}px`
+        });
+
+        if(game.board[y][x] > 0){
+            $("#promotion-white").show();
+            $("#promotion-black").hide();
+            $(".promotion-btn-white").click(function() {
+                game.board[y][x] = Number($(this).attr("id"));
+                $("#promotion").slideUp();
+                resolve();
+            });
+        }
+        else{
+            $("#promotion-black").show();
+            $("#promotion-white").hide();
+            $(".promotion-btn-black").click(function() {
+                game.board[y][x] = Number($(this).attr("id")) * -1;
+                $("#promotion").slideUp();
+                resolve();
+            });
+        }
+
+        $("#promotion").slideDown();
+    });
+}
+
 async function newMove(game, x1, y1, x2, y2){
     return new Promise((resolve, reject) => {
         let pawn = game.board[y1][x1];
@@ -256,6 +290,20 @@ async function newMove(game, x1, y1, x2, y2){
                 if(s.state == 2){
                     endGame(game).then(() => console.log("Success Upload to Cloud"));
                     alert(`${s.side}: Szach Mat`);
+                }
+            }
+
+            for (let x = 0; x < 8; x++) {
+                let field = game.board[0][x];
+                if(field == 6){
+                    promotion(game, x, 0).then(() => syncBoard($("#board0"), game));
+                }
+            }
+
+            for (let x = 0; x < 8; x++) {
+                let field = game.board[7][x];
+                if(field == -6){
+                    promotion(game, x, 7).then(() => syncBoard($("#board0"), game));
                 }
             }
 
@@ -379,58 +427,65 @@ async function checkMove(game, x1, y1, x2, y2){
                     case 5: {
                         let s = side == "white" ? 1 : -1;
                         let b = game.board;
+                        let makeMoveBefore = false;
                         for (let i = 0; i < game.moves.length; i++) {
                             let m = game.moves[i];
                             if(m.pawn == s * 1 || m.pawn == s * 5){
-                                reject("U make move before");
+                                makeMoveBefore = true;
+                                break;
                             }
                         }
 
-                        if(checkField(game, side, x1, y1).length != 0){
-                            reject("King is check");
+                        if(makeMoveBefore){
+                            reject("U make move before");
                         }
-
-                        if(vx > 0){
-                            if(b[y1][x1 + 1] == 0 && b[y1][x1 + 2] == 0){
-                                if(checkField(game, side, x1 + 1, y1).length == 0 && checkField(game, side, x1 + 2, y1).length == 0){
-                                    game.board[y2][x2] = pawn;
-                                    game.board[y2][x2 - 1] = s * 1;
-                                    game.board[y1][x1] = 0;
-                                    game.board[y1][7] = 0;
-                                    resolve({
-                                        status: 0
-                                    });
+                        else{
+                            if(checkField(game, side, x1, y1).length == 0){
+                                if(vx > 0){
+                                    if(b[y1][x1 + 1] == 0 && b[y1][x1 + 2] == 0){
+                                        if(checkField(game, side, x1 + 1, y1).length == 0 && checkField(game, side, x1 + 2, y1).length == 0){
+                                            game.board[y2][x2] = pawn;
+                                            game.board[y2][x2 - 1] = s * 1;
+                                            game.board[y1][x1] = 0;
+                                            game.board[y1][7] = 0;
+                                            resolve({
+                                                status: 0
+                                            });
+                                        }
+                                        else{
+                                            reject("Fields betwen are attacking");    
+                                        }
+                                    }
+                                    else{
+                                        reject("Fields betwen aren't empty");
+                                    }
                                 }
-                                else{
-                                    reject("Fields betwen are attacking");    
+    
+                                if(vx < 0){
+                                    if(b[y1][x1 - 1] == 0 && b[y1][x1 - 2] == 0 && b[y1][x1 - 3] == 0){
+                                        if(checkField(game, side, x1 - 1, y1).length == 0 && checkField(game, side, x1 - 2, y1).length == 0){
+                                            game.board[y2][x2] = pawn;
+                                            game.board[y2][x2 + 1] = s * 1;
+                                            game.board[y1][x1] = 0;
+                                            game.board[y1][0] = 0;
+                                            resolve({
+                                                status: 0
+                                            });
+                                        }
+                                        else{
+                                            reject("Fields betwen are attacking");    
+                                        }
+                                    }
+                                    else{
+                                        reject("Fields betwen aren't empty");
+                                    }
                                 }
                             }
                             else{
-                                reject("Fields betwen aren't empty");
+                                reject("King is check");
                             }
                         }
 
-                        if(vx < 0){
-                            if(b[y1][x1 - 1] == 0 && b[y1][x1 - 2] == 0 && b[y1][x1 - 3] == 0){
-                                if(checkField(game, side, x1 - 1, y1).length == 0 && checkField(game, side, x1 - 2, y1).length == 0){
-                                    game.board[y2][x2] = pawn;
-                                    game.board[y2][x2 + 1] = s * 1;
-                                    game.board[y1][x1] = 0;
-                                    game.board[y1][0] = 0;
-                                    resolve({
-                                        status: 0
-                                    });
-                                }
-                                else{
-                                    reject("Fields betwen are attacking");    
-                                }
-                            }
-                            else{
-                                reject("Fields betwen aren't empty");
-                            }
-                        }
-
-                        reject("U can't make roszada");
                         break;
                     }
 
@@ -507,28 +562,6 @@ function moveEvent() {
                     alert("Error2");
                     alert(error);
                 });
-
-                // checkMove(game, x1, y1, x2, y2).then((e) => {
-                //     let o = $(pawn).clone();
-                //     o.css({
-                //         left: "0px",
-                //         top: "0px",
-                //         position: "static",
-                //     });
-                //     $(field).html(o);
-                //     $(pawn).remove();
-                //     let p_id = game.board[y1][x1];
-                //     game.board[y1][x1] = 0;
-                //     game.board[y2][x2] = p_id;
-                //     newMove(game,x1,y1,x2,y2).catch(() => console.log("Cricical Error"));
-                // }).catch((e) => {
-                //     $(pawn).css({
-                //         left: "0px",
-                //         top: "0px",
-                //         position: "static",
-                //     });    
-                //     console.log(e);
-                // })
             }
             else{
                 $(pawn).css({
@@ -540,6 +573,15 @@ function moveEvent() {
         }
     });
 }
+
+/*function undo(){
+    let moves = game.moves;
+    let board = gmae.board;
+
+    let lastMove = moves[moves.length - 1];
+    let zmienna = "test";
+
+}*/
 
 $(document).ready(function (e) {
     moveEvent();
